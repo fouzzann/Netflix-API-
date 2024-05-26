@@ -1,167 +1,11 @@
-// import 'package:flutter/material.dart';
-// import 'package:netflix/api/api.dart';
-// import 'package:netflix/widgets/models/movie.dart';
-// import 'package:netflix/widgets/movie_slider.dart';
-// import 'package:netflix/widgets/trending.dart';
-
-// class HomePage extends StatefulWidget {
-//   const HomePage({Key? key}) : super(key: key);
-
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
-
-// class _HomePageState extends State<HomePage> {
-//   late Future<List<Movies>> trendingMovies;
-//   late Future<List<Movies>> topRatedMovies;
-//   late Future<List<Movies>> upcomingMovies;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     trendingMovies = Api().getTrendingMovies();
-//     topRatedMovies = Api().getTopRatedMovies();
-//     upcomingMovies = Api().getUpcomingMovies();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.black,
-//       appBar: AppBar(
-//         backgroundColor: Colors.black,
-//         title: Image.asset(
-//           'asset/05cItXL96l4LE9n02WfDR0h-5.webp',
-//           height: 120,
-//         ),
-//         centerTitle: true,
-//       ),
-//       body: SingleChildScrollView(
-//         physics: BouncingScrollPhysics(),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: Text(
-//                 'Trending Movies',
-//                 style: TextStyle(
-//                   fontSize: 20,
-//                   fontWeight: FontWeight.w400,
-//                   color: Colors.white,
-//                 ),
-//               ),
-//             ),
-//             SizedBox(height: 30),
-//             FutureBuilder<List<Movies>>(
-//               future: trendingMovies,
-//               builder: (context, snapshot) {
-//                 if (snapshot.connectionState == ConnectionState.waiting) {
-//                   return CircularProgressIndicator();
-//                 } else if (snapshot.hasError) {
-//                   return Text('Error: ${snapshot.error}');
-//                 } else {
-//                   return  SizedBox(
-//                     child: FutureBuilder(
-//                       future: trendingMovies,
-//                       builder: (context,snapshot){
-//                         if(snapshot.hasError){
-//                           return Center(child: Text(snapshot.error.toString()
-//                           ),
-//                           );
-//                         }else if(snapshot.hasData){
-                          
-//                           return TrendingSlider(snapshot: snapshot,);
-//                         }else{
-//                           return (Center(
-//                             child: CircularProgressIndicator(),
-//                           )
-//                           );
-//                         }
-//                       },
-//                     ),
-//                   );                 
-//                 }
-//               },
-//             ),
-//             SizedBox(height: 30),
-//             Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: Text(
-//                 'Top rated movies',
-//                 style: TextStyle(
-//                   fontSize: 20,
-//                   fontWeight: FontWeight.w400, 
-//                   color: Colors.white,
-//                 ),
-//               ),
-//             ),
-//             SizedBox(height: 30),
-//             SizedBox(
-//                     child: FutureBuilder(
-//                       future: topRatedMovies,
-//                       builder: (context,snapshot){
-//                         if(snapshot.hasError){
-//                           return Center(child: Text(snapshot.error.toString()
-//                           ),
-//                           );
-//                         }else if(snapshot.hasData){
-                          
-//                           return 
-//                           MovieSlider(snapshot: snapshot);
-//                         }else{
-//                           return (Center(
-//                             child: CircularProgressIndicator(),
-//                           )
-//                           );
-//                         }
-//                       },
-//                     ),
-//                   ),  
-//             SizedBox(height: 30),
-//             Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: Text(
-//                 'Upcoming movies',
-//                 style: TextStyle(
-//                   fontSize: 20,
-//                   fontWeight: FontWeight.w500,
-//                   color: Colors.white,
-//                 ),
-//               ),
-//             ),
-//             SizedBox(height: 30),
-//             SizedBox(
-//                     child: FutureBuilder(
-//                       future: upcomingMovies,
-//                       builder: (context,snapshot){
-//                         if(snapshot.hasError){
-//                           return Center(child: Text(snapshot.error.toString()
-//                           ),
-//                           );
-//                         }else if(snapshot.hasData){
-                          
-//                           return MovieSlider(snapshot: snapshot,);
-//                         }else{
-//                           return (Center(
-//                             child: CircularProgressIndicator(),
-//                           )
-//                           );
-//                         }
-//                       },
-//                     ),
-//                   ), 
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:netflix/api/api.dart';
 import 'package:netflix/widgets/models/movie.dart';
+import 'package:netflix/widgets/models/screens/details_screen.dart';
 import 'package:netflix/widgets/movie_slider.dart';
 import 'package:netflix/widgets/trending.dart';
+import 'package:netflix/widgets/constants.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -176,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   late Future<List<Movies>> upcomingMovies;
 
   int _selectedIndex = 0;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -191,16 +36,40 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _filterMovies(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Image.asset(
-          'asset/05cItXL96l4LE9n02WfDR0h-5.webp',
-          height: 120,
-        ),
+        title: _selectedIndex == 1
+            ? Row(
+                children: [
+                  Icon(Icons.search, color: Colors.grey),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                      ),
+                      style: TextStyle(color: Colors.white),
+                      onChanged: _filterMovies,
+                    ),
+                  ),
+                ],
+              )
+            : Image.asset(
+                'asset/05cItXL96l4LE9n02WfDR0h-5.webp',
+                height: 120,
+              ),
         centerTitle: true,
       ),
       body: IndexedStack(
@@ -210,23 +79,25 @@ class _HomePageState extends State<HomePage> {
           _buildSearchContent(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.white,
-        backgroundColor: Colors.black,
-        onTap: _onItemTapped,
-      ),
+     bottomNavigationBar: BottomNavigationBar(
+  items: const <BottomNavigationBarItem>[
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.search),
+      label: 'Search',
+    ),
+ 
+   ],
+  currentIndex: _selectedIndex,
+  selectedItemColor: Colors.red,
+  unselectedItemColor: Colors.white,
+  backgroundColor: Colors.black,
+  onTap: _onItemTapped,
+),
+
     );
   }
 
@@ -252,28 +123,13 @@ class _HomePageState extends State<HomePage> {
             future: trendingMovies,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                return SizedBox(
-                  child: FutureBuilder(
-                    future: trendingMovies,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text(snapshot.error.toString()),
-                        );
-                      } else if (snapshot.hasData) {
-                        return TrendingSlider(snapshot: snapshot);
-                      } else {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                    },
-                  ),
+                return Center(
+                  child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.white)),
                 );
+              } else {
+                return TrendingSlider(snapshot: snapshot);
               }
             },
           ),
@@ -294,28 +150,13 @@ class _HomePageState extends State<HomePage> {
             future: topRatedMovies,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                return SizedBox(
-                  child: FutureBuilder(
-                    future: topRatedMovies,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text(snapshot.error.toString()),
-                        );
-                      } else if (snapshot.hasData) {
-                        return MovieSlider(snapshot: snapshot);
-                      } else {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                    },
-                  ),
+                return Center(
+                  child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.white)),
                 );
+              } else {
+                return MovieSlider(snapshot: snapshot);
               }
             },
           ),
@@ -336,28 +177,13 @@ class _HomePageState extends State<HomePage> {
             future: upcomingMovies,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                return SizedBox(
-                  child: FutureBuilder(
-                    future: upcomingMovies,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text(snapshot.error.toString()),
-                        );
-                      } else if (snapshot.hasData) {
-                        return MovieSlider(snapshot: snapshot);
-                      } else {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                    },
-                  ),
+                return Center(
+                  child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.white)),
                 );
+              } else {
+                return MovieSlider(snapshot: snapshot);
               }
             },
           ),
@@ -367,11 +193,68 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchContent() {
-    return Center(
-      child: Text(
-        'Search Page',
-        style: TextStyle(color: Colors.white, fontSize: 24),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Top Searched Movies',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        Expanded(
+          child: FutureBuilder<List<Movies>>(
+            future: Future.wait([trendingMovies, topRatedMovies, upcomingMovies])
+                .then((List<List<Movies>> lists) => lists.expand((list) => list).toList()),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.white)));
+              } else {
+                List<Movies> movies = snapshot.data!;
+                if (_searchQuery.isNotEmpty) {
+                  movies = movies.where((movie) {
+                    return movie.title.toLowerCase().contains(_searchQuery.toLowerCase());
+                  }).toList();
+                }
+
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 2 / 3,
+                  ),
+                  itemCount: movies.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailScreen(movie: movies[index]),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Image.network(
+                          "${Constants.imagePath}${movies[index].posterPath}",
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }
