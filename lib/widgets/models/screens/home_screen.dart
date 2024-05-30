@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:netflix/api/api.dart';
+import 'package:netflix/widgets/coming_soon_widget.dart';
 import 'package:netflix/widgets/models/movie.dart';
-import 'package:netflix/widgets/models/screens/details_screen.dart';
+import 'package:netflix/widgets/models/screens/search_movies.dart';
 import 'package:netflix/widgets/movie_slider.dart';
 import 'package:netflix/widgets/trending.dart';
-import 'package:netflix/widgets/constants.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -76,11 +75,12 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: [
           _buildHomeContent(),
-          _buildSearchContent(),
+          Search(trendingMovies: trendingMovies, topRatedMovies: topRatedMovies, upcomingMovies: upcomingMovies, searchQuery:_searchQuery ),
+          _buildNewAndHot()
         ],
       ),
      bottomNavigationBar: BottomNavigationBar(
-  items: const <BottomNavigationBarItem>[
+   items: const <BottomNavigationBarItem>[
     BottomNavigationBarItem(
       icon: Icon(Icons.home),
       label: 'Home',
@@ -89,7 +89,13 @@ class _HomePageState extends State<HomePage> {
       icon: Icon(Icons.search),
       label: 'Search',
     ),
- 
+    BottomNavigationBarItem(
+      icon: Icon(
+        Icons.video_library,
+        ),
+        label: 'New & Hot' 
+      ),
+  
    ],
   currentIndex: _selectedIndex,
   selectedItemColor: Colors.red,
@@ -100,8 +106,122 @@ class _HomePageState extends State<HomePage> {
 
     );
   }
+  _buildNewAndHot(){
+   return DefaultTabController(
+    length: 2, 
+     child: SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.black, 
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          elevation: 0,
+          title: Text('New & hot',
+          style: TextStyle(
+            color: Colors.white
+          ),
+          ),
+          actions: [
+            Icon(Icons.cast,
+            color: Colors.white,
+            ),
+             SizedBox(
+              width: 20,
+             ),
+             ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                color: Colors.blue,
+                height: 27,
+                width: 27, 
+              ),
+            ),
+            SizedBox(
+              width: 20, 
+            ) 
+          ],
+          bottom: TabBar( 
+            dividerColor: Colors.black,
+            isScrollable: false,
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white ,
+            ),
+            labelColor: Colors.black,
+            labelStyle: TextStyle(
+              fontWeight: FontWeight.bold, 
+              fontSize: 14   
+             ),
+             unselectedLabelColor: Colors.white,
+            tabs:[ 
+              Tab( 
+                text: "🍿 Coming soon ",
+              ),
+              Tab(
+                text: "🔥 Everyone's Watching", 
+              )
+            ] ),
+        ),
+        body: TabBarView(
+          children: [
+            SingleChildScrollView( 
+              child: Column(
+                children: [
+                   ComingSoonMovieWidget(
+                      imageUrl:
+                          'https://miro.medium.com/v2/resize:fit:1024/1*P_YU8dGinbCy6GHlgq5OQA.jpeg',
+                      overview:
+                          'When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.',
+                      logoUrl:
+                          "https://s3.amazonaws.com/www-inside-design/uploads/2017/10/strangerthings_feature-983x740.jpg",
+                      month: "Jun",
+                      day: "19",
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    ComingSoonMovieWidget(
+                      imageUrl:
+                          'https://www.pinkvilla.com/images/2022-09/rrr-review.jpg',
+                      overview:
+                          'A fearless revolutionary and an officer in the British force, who once shared a deep bond, decide to join forces and chart out an inspirational path of freedom against the despotic rulers.',
+                      logoUrl:
+                          "https://www.careerguide.com/career/wp-content/uploads/2023/10/RRR_full_form-1024x576.jpg",
+                      month: "Mar",
+                      day: "07",
+                    ),
+                ],
+              ),
+            ),
+            ComingSoonMovieWidget(
+                      imageUrl:
+                          'https://miro.medium.com/v2/resize:fit:1024/1*P_YU8dGinbCy6GHlgq5OQA.jpeg',
+                      overview:
+                          'When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.',
+                      logoUrl:
+                          "https://s3.amazonaws.com/www-inside-design/uploads/2017/10/strangerthings_feature-983x740.jpg",
+                      month: "Jun",
+                      day: "19",
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    ComingSoonMovieWidget(
+                      imageUrl:
+                          'https://www.pinkvilla.com/images/2022-09/rrr-review.jpg',
+                      overview:
+                          'A fearless revolutionary and an officer in the British force, who once shared a deep bond, decide to join forces and chart out an inspirational path of freedom against the despotic rulers.',
+                      logoUrl:
+                          "https://www.careerguide.com/career/wp-content/uploads/2023/10/RRR_full_form-1024x576.jpg",
+                      month: "Mar",
+                      day: "07",
+                    ),
+        ]),
+     ),
+     )
+    );
+  }
 
-  Widget _buildHomeContent() {
+   _buildHomeContent() {
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
       child: Column(
@@ -112,7 +232,7 @@ class _HomePageState extends State<HomePage> {
             child: Text(
               'Trending Movies',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20, 
                 fontWeight: FontWeight.w400,
                 color: Colors.white,
               ),
@@ -191,70 +311,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  Widget _buildSearchContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'Top Searched Movies',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        Expanded(
-          child: FutureBuilder<List<Movies>>(
-            future: Future.wait([trendingMovies, topRatedMovies, upcomingMovies])
-                .then((List<List<Movies>> lists) => lists.expand((list) => list).toList()),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.white)));
-              } else {
-                List<Movies> movies = snapshot.data!;
-                if (_searchQuery.isNotEmpty) {
-                  movies = movies.where((movie) {
-                    return movie.title.toLowerCase().contains(_searchQuery.toLowerCase());
-                  }).toList();
-                }
-
-                return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 2 / 3,
-                  ),
-                  itemCount: movies.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailScreen(movie: movies[index]),
-                          ),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Image.network(
-                          "${Constants.imagePath}${movies[index].posterPath}",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }
-            },
-          ),
-        ),
-      ],
-    );
-  }
 }
+
+
